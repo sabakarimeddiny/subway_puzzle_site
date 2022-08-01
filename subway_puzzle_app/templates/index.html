@@ -1,0 +1,73 @@
+{% load static %}
+<head>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+<link rel="stylesheet" href="{% static '/css/NYC.css' %}">
+<link rel="stylesheet" href="{% static '/css/style.css' %}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <div class="navbar">
+        <a href="/">Home</a>
+    </div>
+    <form method="post" autocomplete="off" name='checkbox'>
+    {% csrf_token %}
+    <div class="center">
+        <div class="station-box" id="start">
+            {{ start }}
+        </div>
+        <div class="answer-box" id="first">
+            Train 1
+            {{ form.train_1.as_hidden }}
+        </div>
+        <div class="answer-box" id="second">
+            Train 2
+            {{ form.train_2.as_hidden }}
+        </div>
+        <div class="answer-box" id="third">
+            Train 3
+            {{ form.train_3.as_hidden }}
+        </div>
+        <div class="station-box" id="end">
+            {{ end }}
+        </div>
+        <!-- {% block fillsolution %} -->
+        <!-- {{ sol }} -->
+        <!-- {{ sol }} -->
+        {{ form.solution.as_hidden }}
+        <!-- {% endblock %} -->
+        <div class="lines-box">
+            <div class="line"><span class="subway-icon mta-red">1</span></div>
+            <div class="line"><span class="subway-icon mta-red">2</span></div>
+            <div class="line"><span class="subway-icon mta-red">3</span></div>
+            <div class="line"><span class="subway-icon mta-green">4</span></div>
+            <div class="line"><span class="subway-icon mta-green">5</span></div>
+            <div class="line"><span class="subway-icon mta-green">6</span></div>
+            <div class="line"><span class="subway-icon mta-purple">7</span></div>
+            <div class="line"><span class="subway-icon mta-purple express">7</span></div>
+            <div class="line"><span class="subway-icon mta-blue">A</span></div>
+            <div class="line"><span class="subway-icon mta-blue">C</span></div>
+            <div class="line"><span class="subway-icon mta-blue">E</span></div>
+            <div class="line"><span class="subway-icon mta-orange">B</span></div>
+            <div class="line"><span class="subway-icon mta-orange">D</span></div>
+            <div class="line"><span class="subway-icon mta-orange">F</span></div>
+            <div class="line"><span class="subway-icon mta-orange">M</span></div>
+            <div class="line"><span class="subway-icon mta-green-2">G</span></div>
+            <div class="line"><span class="subway-icon mta-yellow">N</span></div>
+            <div class="line"><span class="subway-icon mta-yellow">Q</span></div>
+            <div class="line"><span class="subway-icon mta-yellow">R</span></div>
+            <div class="line"><span class="subway-icon mta-yellow">W</span></div>
+            <div class="line"><span class="subway-icon mta-gray">L</span></div>
+            <div class="line"><span class="subway-icon mta-gray">S</span></div>
+            <div class="line"><span class="subway-icon mta-gray">S</span></div>
+            <div class="line"><span class="subway-icon mta-gray">S</span></div>
+            <div class="line"><span class="subway-icon mta-brown">J</span></div>
+            <div class="line"><span class="subway-icon mta-brown">Z</span></div>
+        </div>
+            <input class="input" name='submit' type="submit" value="Submit"> 
+        </form>
+    </div>
+<script type='text/javascript' src="{% static '/js/dragndrop.js' %}"></script>
+
+</body>
