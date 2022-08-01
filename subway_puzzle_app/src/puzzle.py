@@ -4,11 +4,27 @@ import pickle
 import numpy as np
 import pandas as pd
 
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
+import shapely.wkt
+
 def get_coords_from_string(string):
     return np.array(string.split('(')[1].split(')')[0].split(' ')).astype(float)
 
 def get_coord_dist(coords1, coords2):
     return np.sqrt(np.sum((np.array(coords1) - np.array(coords2))**2))
+
+bb = pd.read_csv(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'nybb.csv'))
+boro_borders = {}
+for b in range(len(bb)):
+    boro = bb.loc[b]['BoroName']
+    boro_borders[boro] = shapely.wkt.loads(bb.loc[b]['the_geom'])
+
+def find_boro(point):
+    point = Point(point)
+    for k, v in boro_borders.items():
+        if v.contains(point):
+            return k
 
 class Puzzle:
 
@@ -44,7 +60,9 @@ class Puzzle:
                                 current_station['NOTES'] = list(set(current_station['NOTES']))
                                 indices_to_drop.append(j)
                             else:
-                                candidate_station['NAME'] = candidate_station['NAME'] + '_'
+                                boro = find_boro(candidate_station['the_geom'])
+                                candidate_station['NAME'] = candidate_station['NAME'] + ' (' + boro + ')'
+
             df = a.drop(indices_to_drop)
             df = df.reset_index().drop('index',axis=1)            
 
@@ -115,6 +133,8 @@ class Puzzle:
         return line_paths
 
     def verify_solution(self, answer, solution):
+        if np.shape(solution)[1] != len(answer):
+            return False
         for y in range(np.shape(solution)[1]):
             if y == 0:
                 verify = np.array([answer[y] in x for x in np.array(solution)[:,y].flatten()])
