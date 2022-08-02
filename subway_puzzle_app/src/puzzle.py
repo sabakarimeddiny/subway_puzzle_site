@@ -6,13 +6,22 @@ import pandas as pd
 
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
+from shapely.geometry import MultiPolygon
 import shapely.wkt
+import fiona
 
 def get_coords_from_string(string):
     return np.array(string.split('(')[1].split(')')[0].split(' ')).astype(float)
 
 def get_coord_dist(coords1, coords2):
     return np.sqrt(np.sum((np.array(coords1) - np.array(coords2))**2))
+
+def get_lines_from_note(note):
+    note = note.split(',')
+    note = [x.strip() for x in note]
+    note = [x for x in note if '-all times' in x or len(x)==1]
+    note = [x.split('-')[0] for x in note]
+    return note
 
 bb = pd.read_csv(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'nybb.csv'))
 boro_borders = {}
@@ -26,17 +35,37 @@ def find_boro(point):
         if v.contains(point):
             return k
 
+shpfile = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'neighborhoods','geo_export_b1478601-ea50-4cad-a3b4-05a503b5f043.shp')
+shape = fiona.open(shpfile)
+
+def find_neighborhood(coords):
+    point = Point(coords)
+    for neighborhood in shape:
+        try:
+            pg = MultiPolygon([Polygon(x) for x in neighborhood['geometry']['coordinates']])
+        except:
+            pg = MultiPolygon([Polygon(x[0]) for x in neighborhood['geometry']['coordinates']])
+        if pg.contains(point):
+            return neighborhood['properties']['ntaname']
+
 class Puzzle:
 
     def __init__(self):
         if not os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'table.p')):
-            self.THRESHOLD = 0.002
+            self.THRESHOLD = 0.0025
             path_ = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'subway.csv')
             a = pd.read_csv(path_).drop(columns=['URL','OBJECTID'])
             a['the_geom'] = [get_coords_from_string(x) for x in a['the_geom']]
-            a['LINE'] = [x.split('-') for x in a['LINE'].values]
+            # a['LINE'] = [x.split('-') for x in a['LINE'].values]
+            a['LINE'] = [get_lines_from_note(x) for x in a['NOTES'].values]
             a['NOTES'] = [x.split(',') for x in a['NOTES'].values]
             indices_to_drop = []
+
+            for i in range(len(a)):
+                current_station = a.loc[i]
+                nbhd = find_neighborhood(current_station['the_geom'])
+                current_station['NAME'] = current_station['NAME'] + ' (' + nbhd + ')'
+
             for i in range(len(a)):
                 if i in indices_to_drop:
                     continue
@@ -60,8 +89,9 @@ class Puzzle:
                                 current_station['NOTES'] = list(set(current_station['NOTES']))
                                 indices_to_drop.append(j)
                             else:
-                                boro = find_boro(candidate_station['the_geom'])
-                                candidate_station['NAME'] = candidate_station['NAME'] + ' (' + boro + ')'
+                                candidate_station['NAME'] = candidate_station['NAME'] + '_' 
+                # nbhd = find_neighborhood(current_station['the_geom'])
+                # current_station['NAME'] = current_station['NAME'] + ' (' + nbhd + ')'
 
             df = a.drop(indices_to_drop)
             df = df.reset_index().drop('index',axis=1)            
@@ -83,10 +113,11 @@ class Puzzle:
                 station_graph[station] = connections
 
             with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'table.p'), "wb") as f:
-                pickle.dump(a, f)
+                pickle.dump(df, f)
             with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'graph.p'), "wb") as f:
                 pickle.dump(station_graph, f)
-            self.subway_table = a
+
+            self.subway_table = df
             self.station_graph = station_graph
             
         else:
