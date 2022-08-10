@@ -163,6 +163,20 @@ class Puzzle:
                 line_paths.append(lines)
         return line_paths
 
+
+    def check_solution(self, answer, solution):
+        verify = np.zeros(len(answer))
+        for e, i in enumerate(answer):
+            if i in set([x for y in np.array(solution)[:,e] for x in y]):
+                verify[e] = 1
+            for k, j in enumerate(solution):
+                if e == k:
+                    continue
+                else:
+                    if i in set([x for y in np.array(solution)[:,k] for x in y]):
+                        verify[e] = 0.5
+        return verify
+
     def verify_solution(self, answer, solution):
         if np.shape(solution)[1] != len(answer):
             return False
