@@ -1,1 +1,5 @@
-# subway_puzzle_site
+# Subway Puzzle
+
+Django app for an NYC subway puzzle. Guess the correct trains to take from point A to point B.
+
+python manage.py runserver 
