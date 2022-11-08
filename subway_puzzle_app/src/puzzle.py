@@ -169,7 +169,7 @@ class Puzzle:
         for e, i in enumerate(answer):
             if i in set([x for y in np.array(solution)[:,e] for x in y]):
                 verify[e] = 1
-            for k, j in enumerate(solution):
+            for k, j in enumerate(solution[0]):
                 if e == k:
                     continue
                 else:
